@@ -25,12 +25,23 @@ class AppointmentController extends Controller
 
         $validator = Validator::make(request()->all(), [
             'healthcare_professional_id' => 'required|exists:healthcare_professionals,id',
-            'appointment_start_time' => 'required|date|date_format:Y-m-d H:i:s',
+            'appointment_start_time' =>  [
+                'required',
+                'date',
+                'date_format:Y-m-d H:i:s',
+                function ($attribute, $value, $fail) {
+                    $currentTime = Carbon::now();
+                    if (Carbon::parse($value)->lte($currentTime)) {
+                        $fail('The :attribute must be a future date.');
+                    }
+                },
+            ],
             'appointment_end_time' => 'required|date|date_format:Y-m-d H:i:s|after:appointment_start_time',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
+       
         if ($this->passes($request->healthcare_professional_id, $request->appointment_start_time, $request->appointment_end_time)) {
             $appointment = Appointment::create([
                 'user_id' => auth('api')->id(),
@@ -129,7 +140,7 @@ class AppointmentController extends Controller
         // Find appointment associated with the user
         $appointment = $user->appointments()->find($id);
         if ($appointment) {
-            
+
             $currentTime = Carbon::now();
             if ($appointment->appointment_end_time->lt($currentTime)) {
                 if ($appointment->status == 'booked') {
