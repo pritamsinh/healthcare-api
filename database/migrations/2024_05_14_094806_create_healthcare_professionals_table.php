@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('healthcare_professionals', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('specialty');
             $table->timestamps();
         });
     }
