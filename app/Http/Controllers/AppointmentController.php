@@ -105,11 +105,8 @@ class AppointmentController extends Controller
 
     public function cancel($id)
     {
-
-        // Retrieve the logged-in user
-        $user = auth()->user();
-
-        // Find appointment associated with the user
+       
+        $user = auth()->user();       
         $appointment = $user->appointments()->find($id);
         if ($appointment) {
 
